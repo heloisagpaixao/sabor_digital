@@ -29,7 +29,8 @@ class ProdutoController {
 
     async cadastrar(req, res) {
         try {
-            const resultado = await ProdutoService.cadastrarProduto(req.body);
+            const dados = { ...req.body, file: req.file };
+            const resultado = await ProdutoService.cadastrarProduto(dados);
             res.status(201).json(resultado);
         } catch (erro) {
             res.status(erro.status || 500).json({
@@ -42,7 +43,8 @@ class ProdutoController {
 
     async atualizar(req, res) {
         try {
-            const resultado = await ProdutoService.atualizarProduto(req.params.id, req.body);
+            const dados = { ...req.body, file: req.file };
+            const resultado = await ProdutoService.atualizarProduto(req.params.id, dados);
             res.json(resultado);
         } catch (erro) {
             res.status(erro.status || 500).json({

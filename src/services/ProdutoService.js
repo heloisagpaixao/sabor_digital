@@ -1,12 +1,18 @@
 const ProdutoRepository = require('../repositories/ProdutoRepository');
+const fs = require('fs').promises;
+const path = require('path');
 
 class ProdutoService {
     async listarProdutos() {
         const produtos = await ProdutoRepository.findAll();
+        const produtosFormatados = produtos.map(p => ({
+            ...p,
+            imagem: p.imagem ? `/public/${p.imagem}` : null
+        }));
         return {
             sucesso: true,
-            dados: produtos,
-            total: produtos.length
+            dados: produtosFormatados,
+            total: produtosFormatados.length
         };
     }
 
@@ -22,18 +28,26 @@ class ProdutoService {
 
         return {
             sucesso: true,
-            dados: produto
+            dados: {
+                ...produto,
+                imagem: produto.imagem ? `/public/${produto.imagem}` : null
+            }
         };
     }
 
     async cadastrarProduto(dados) {
-        const { nome, descricao, preco, categoria, disponivel } = dados;
-
-        if (!nome || !descricao || preco === undefined) {
-            throw { status: 400, mensagem: "Nome, descrição e preço são obrigatórios" };
+        let { nome, descricao, preco, categoria, disponivel, file } = dados;
+        
+        // Convert preco if it comes as a string from FormData
+        if (typeof preco === 'string') {
+            preco = parseFloat(preco);
         }
 
-        if (typeof preco !== "number" || preco <= 0) {
+        if (!nome || !descricao || preco === undefined || isNaN(preco)) {
+            throw { status: 400, mensagem: "Nome, descrição e preço são obrigatórios e devem ser válidos" };
+        }
+
+        if (preco <= 0) {
             throw { status: 400, mensagem: "Preço deve ser um número positivo" };
         }
 
@@ -42,7 +56,8 @@ class ProdutoService {
             descricao: descricao.trim(),
             preco,
             categoria: categoria || null,
-            disponivel: disponivel ?? true
+            imagem: file ? `uploads/produtos/${file.filename}` : null,
+            disponivel: disponivel === 'false' || disponivel === false ? false : true
         };
 
         const id = await ProdutoRepository.create(novoProduto);
@@ -65,18 +80,31 @@ class ProdutoService {
         }
 
         const atualizado = {};
-        const { nome, descricao, preco, categoria, disponivel } = dados;
+        let { nome, descricao, preco, categoria, disponivel, file } = dados;
 
         if (nome !== undefined) atualizado.nome = nome.trim();
         if (descricao !== undefined) atualizado.descricao = descricao.trim();
         if (preco !== undefined) {
-            if (typeof preco !== "number" || preco <= 0) {
+            if (typeof preco === 'string') preco = parseFloat(preco);
+            if (isNaN(preco) || preco <= 0) {
                 throw { status: 400, mensagem: "Preço deve ser um número positivo" };
             }
             atualizado.preco = preco;
         }
         if (categoria !== undefined) atualizado.categoria = categoria;
-        if (disponivel !== undefined) atualizado.disponivel = disponivel;
+        if (disponivel !== undefined) atualizado.disponivel = disponivel === 'false' || disponivel === false ? false : true;
+
+        if (file) {
+            atualizado.imagem = `uploads/produtos/${file.filename}`;
+            if (existe.imagem) {
+                const caminhoAntigo = path.join(__dirname, '..', '..', 'public', existe.imagem);
+                try {
+                    await fs.unlink(caminhoAntigo);
+                } catch (err) {
+                    console.error("Erro ao apagar imagem antiga:", err);
+                }
+            }
+        }
 
         if (Object.keys(atualizado).length === 0) {
             throw { status: 400, mensagem: "Nenhum dado válido enviado para atualização" };
@@ -98,6 +126,15 @@ class ProdutoService {
         const existe = await ProdutoRepository.findById(id);
         if (!existe) {
             throw { status: 404, mensagem: "Produto não encontrado" };
+        }
+
+        if (existe.imagem) {
+            const caminho = path.join(__dirname, '..', '..', 'public', existe.imagem);
+            try {
+                await fs.unlink(caminho);
+            } catch (err) {
+                console.error("Erro ao apagar imagem no deletar:", err);
+            }
         }
 
         await ProdutoRepository.delete(id);

@@ -49,12 +49,14 @@ Retorna a lista de todos os produtos ativos e inativos.
     "descricao": "Massa com molho...",
     "preco": "35.50",
     "categoria": "Massa",
+    "imagem": "/public/uploads/produtos/1684321234-56789.jpg",
     "disponivel": 1,
     "criado_em": "...",
     "atualizado_em": "..."
   }
 ]
 ```
+> **Nota sobre imagens:** A propriedade `imagem` já vem prefixada com `/public/`. O Front-end deve apenas concatenar isso à URL base (Ex: `http://localhost:3000/public/uploads/produtos/1684321234-56789.jpg`) e utilizar na tag `<img src="...">`.
 
 ### **Buscar Produto Específico**
 **`GET /produtos/:id`** \
