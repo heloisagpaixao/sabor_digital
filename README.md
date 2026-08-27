@@ -34,7 +34,7 @@ npm install
 
 1. Certifique-se de que o seu serviço do MySQL está rodando.
 2. Abra o seu gerenciador de banco de dados preferido (como MySQL Workbench, DBeaver, ou via linha de comando).
-3. Execute o script do arquivo **`database.sql`** que está na raiz do projeto. Ele criará o banco de dados `sabordigital` juntamente com todas as tabelas necessárias e alguns dados iniciais.
+3. Execute o script do arquivo **`database.sql`** que está na raiz do projeto. Ele criará o banco de dados `sabordigital_c` juntamente com todas as tabelas necessárias e alguns dados iniciais.
 
 ### 4. Configurar as Variáveis de Ambiente (.env)
 
@@ -44,7 +44,7 @@ Crie um arquivo chamado **`.env`** na raiz do projeto. Você pode se basear no a
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=sua_senha_do_mysql
-DB_NAME=sabordigital
+DB_NAME=sabordigital_c
 DB_PORT=3306
 PORT=3000
 ```
